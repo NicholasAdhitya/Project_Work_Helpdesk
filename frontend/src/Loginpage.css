@@ -1,0 +1,86 @@
+/* Basic page styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Center the login container */
+.login-container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+/* Title styling */
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Input field styling */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: #fafafa;
+}
+
+/* Button styling */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color:  #ff5050;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #ef0000;
+}
+
+/* Error message styling */
+p {
+    color: red;
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 10px;
+    visibility: hidden; /* Start hidden */
+}
+
+p.visible {
+    visibility: visible; /* Show when error occurs */
+}
+
+/* Form element spacing */
+form div {
+    margin-bottom: 15px;
+}
+
+/* Add subtle animation */
+button, input[type="text"], input[type="password"] {
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.2);
+}

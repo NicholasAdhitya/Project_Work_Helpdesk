@@ -1,0 +1,54 @@
+table {
+  width: 100%; /* Full width of the container */
+  border-collapse: collapse; /* Merge borders */
+  margin-top: 20px; /* Space above the table */
+}
+
+th, td {
+  padding: 12px; /* Padding inside cells */
+  text-align: left; /* Align text to the left */
+  border: 1px solid #ddd; /* Light gray border for cells */
+}
+
+th {
+  background-color: #ff5050; /* Theme color for header rows */
+  color: white; /* Text color for header rows */
+}
+
+.user-info {
+  font-size: 1.2em;
+  color: #333;
+}
+
+.user-dashboard {
+    padding: 20px;
+}
+
+h2, h3 {
+    color: #333;
+}
+
+form {
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+input[type="text"],
+input[type="file"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+
+
+
+

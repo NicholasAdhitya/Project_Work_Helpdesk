@@ -1,0 +1,29 @@
+.button-container {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+}
+
+.button-container button {
+    margin: 0; /* Remove margin if any */
+}
+
+table {
+    width: 100%; /* Full width of the container */
+    border-collapse: collapse; /* Merge borders */
+    margin-top: 20px; /* Space above the table */
+}
+
+th, td {
+    padding: 12px; /* Padding inside cells */
+    text-align: center; /* Align text to the left */
+    border: 1px solid #ddd; /* Light gray border for cells */
+}
+
+th {
+    background-color: #ff5050; /* Theme color for header rows */
+    color: white; /* Text color for header rows */
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for even rows */
+}
