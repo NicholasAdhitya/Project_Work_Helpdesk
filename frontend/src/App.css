@@ -3,21 +3,17 @@
   text-align: center;
 }
 
+/* Content styling: Adjust top margin to prevent content from being hidden */
+.App-header {
+  margin-top: 40%; /* Add margin so content isn't hidden behind the top bar */
+  padding: 20px; /* Add some padding for spacing */
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
 
 .App-link {
   color: #61dafb;
@@ -44,23 +40,52 @@ button:hover {
   right: 100px;
 }
 
+
+
+.top-bar {
+  position: fixed; /* Keep the top bar at the top of the page */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #e5928e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Distribute space between logo and button */
+  padding: 0 20px;
+  z-index: 1000; /* Ensure the top bar stays on top */
+}
+
 .logout-button {
-  justify-content: center;
-  top: 10px;
-  right: 10px;
-  padding: 10px 100px;
-  font-size: 0.8rem;
+  position: relative; /* Align it properly inside the top bar */
+  top: -5px; /* Ensure it's aligned with the top */
+  right: 10px; /* Adjust distance from the right */
+  padding: 10px 50px; /* Adjust padding for better size */
+  font-size: 0.8rem; /* Adjust font size */
   background-color: #ff4d4d;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
+  z-index: 2000; /* Ensure the button stays above the content */
 }
 
 .logout-button:hover {
   background-color: #e60000;
 }
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-image {
+  padding-top: 60px;
+  width: 100px; /* Adjust logo size */
+  height: auto;
+}
+
 
 @keyframes App-logo-spin {
   from {

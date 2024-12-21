@@ -5,18 +5,19 @@ const multer = require('multer');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const cron = require('node-cron');
 
 //const adminRoutes = require('./adminRoutes');
 
 const app = express();
 const port = 5000;
-const allowedOrigins = ['http://localhost:3000', 'http://192.168.100.168:3000']; // Add both origins
+//const allowedOrigins = ['http://localhost:3000', 'http://192.168.100.168:3000']; // Add both origins
 
 
 // Middleware
 app.use(cors());
-app.use(cors({
-    origin: 'http://192.168.100.168:3000' ,
+/*app.use(cors({
+    origin: 'http://192.168.50.254:3000' ,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'] // The IP of the second PC
 }));
@@ -29,7 +30,7 @@ app.use(cors({
             callback(new Error('Not allowed by CORS'));
         }
     },
-}));
+}));*/
 // This handles preflight requests (OPTIONS)
 app.options('*', cors());
 app.get('/test-cors', (req, res) => {
@@ -175,6 +176,71 @@ app.get('/technicians/:category', (req, res) => {
     });
 });
 
+// Technicians to mark ticket as 'Done'
+app.put('/tickets/:ticket_ID/status', (req, res) => {
+    const { ticket_ID } = req.params;
+    const { ticket_status } = req.body;
+
+    const date_done = ticket_status === "Done" ? new Date() : null; // Set date_done only if status is "Done"
+
+    const query = `
+        UPDATE ticket 
+        SET ticket_status = ?, date_done = ?
+        WHERE ticket_ID = ?
+    `;
+    const values = [ticket_status, date_done, ticket_ID];
+
+    db.query(query, values, (error, results) => {
+        if (error) {
+            console.error('Error updating ticket status:', error);
+            return res.status(500).json({ message: 'Error updating ticket status' });
+        }
+
+        res.json({ message: 'Ticket status updated successfully', results });
+    });
+});
+
+//User confirmation ticket
+app.put('/tickets/:ticket_ID/close', (req, res) => {
+    const { ticket_ID } = req.params;
+
+    // Validate ticket_ID
+    if (isNaN(ticket_ID)) {
+        return res.status(400).json({ message: 'Invalid ticket ID' });
+    }
+
+    const query = `
+        UPDATE ticket 
+        SET ticket_status = 'Closed', date_done = NOW(), date_closed = NOW() 
+        WHERE ticket_ID = ? AND ticket_status = 'Done'
+    `;
+
+    db.query(query, [ticket_ID], (err, result) => {
+        if (err) {
+            console.error(`Error closing ticket with ID ${ticket_ID}:`, err);
+            return res.status(500).json({ message: 'Error closing ticket' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Ticket not found or already closed' });
+        }
+
+        // Fetch updated ticket data
+        const selectQuery = 'SELECT * FROM ticket WHERE ticket_ID = ?';
+        db.query(selectQuery, [ticket_ID], (err, updatedResult) => {
+            if (err) {
+                console.error('Error fetching updated ticket data:', err);
+                return res.status(500).json({ message: 'Error fetching updated ticket data' });
+            }
+
+            res.json({
+                message: 'Ticket successfully closed',
+                ticket: updatedResult[0],
+            });
+        });
+    });
+});
+
 // Ticket creation logic
 app.post('/create-ticket', upload.single('attachment'), (req, res) => {
     const { user_ID, ticket_subject, ticket_desc, ticket_category, ticket_urgency, tech_name } = req.body;
@@ -254,14 +320,56 @@ app.get('/user-tickets/:userId', (req, res) => {
     });
 });
 
-//Auto Close Function
-/*
-autoCloseTicket.scheduleAutoClose();
-app.get('/stop-auto-close', (req, res) => {
-    stopAutoClose();
-    res.send('Auto-close schedule stopped');
+// Auto-Close Function
+const autoCloseTickets = () => {
+    const daysToAutoClose = 1; // Adjust this as needed
+    const currentDate = new Date();
+    console.log(`Auto-close check started at ${currentDate}`);
+
+    db.query(
+        `SELECT ticket_ID, date_done 
+         FROM ticket 
+         WHERE ticket_status = 'Done' AND date_closed IS NULL`,
+        (err, results) => {
+            if (err) {
+                console.error('Error fetching tickets for auto-close:', err);
+                return;
+            }
+
+            results.forEach(ticket => {
+                const dateDone = new Date(ticket.date_done);
+                const diffInDays = Math.floor((currentDate - dateDone) / (1000 * 60 * 60 * 24));
+
+                if (diffInDays >= daysToAutoClose) {
+                    // Update the ticket status to Closed
+                    db.query(
+                        `UPDATE ticket SET ticket_status = 'Closed', date_closed = ? WHERE ticket_ID = ?`,
+                        [currentDate, ticket.ticket_ID],
+                        (updateErr, result) => {
+                            if (updateErr) {
+                                console.error(`Error auto-closing ticket ${ticket.ticket_ID}:`, updateErr);
+                            } else {
+                                console.log(`Ticket ${ticket.ticket_ID} auto-closed successfully.`);
+                            }
+                        }
+                    );
+                }
+            });
+        }
+    );
+};
+
+// Schedule Auto-Close to Run Daily
+cron.schedule('0 0 * * *', () => {
+    console.log('Running auto-close tickets');
+    autoCloseTickets();
 });
-*/
+
+// Example API to Test Manual Fetch for Auto-Close (Optional for Debugging)
+app.get('/test-autoclose', (req, res) => {
+    autoCloseTickets();
+    res.send('Auto-close logic triggered');
+});
 
 //-----------------------------TECHNICIAN FEATURE----------------------------
 
@@ -326,7 +434,7 @@ app.delete('/tickets/:ticket_ID', (req, res) => {
     });
 });
 
-// ------------------- ADMIN FEATURE ------------------------------------
+// ----------------------------- ADMIN FEATURE ------------------------------------
 
 // Fetch all users
 app.get('/admin/users', (req, res) => {

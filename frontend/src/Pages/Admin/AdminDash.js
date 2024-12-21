@@ -385,12 +385,28 @@ const AdminDash = () => {
                                     <th>
                                         <button onClick={() => sortTickets('date_created')}>Date Created</button>
                                     </th>
+                                    <th>
+                                        <button onClick={() => sortTickets('date_closed')}>Date Closed</button>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {tickets.map((ticket) => {
                                 // Convert the UTC date to local timezone
-                                const localDate = new Date(ticket.date_created).toLocaleString();
+                                const formatDate = (date) =>
+                                    date
+                                        ? new Date(date).toLocaleString('en-GB', {
+                                              day: '2-digit',
+                                              month: '2-digit',
+                                              year: '2-digit',
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                              hour12: false,
+                                          })
+                                        : 'N/A';
+                            
+                                const localDate = formatDate(ticket.date_created); // Format date_created
+                                const localDateClosed = formatDate(ticket.date_closed); // Format date_closed if available
 
                                 return (
                                     <tr key={ticket.ticket_ID}>
@@ -405,6 +421,7 @@ const AdminDash = () => {
                                         <td>{ticket.ticket_desc}</td>
                                         <td>{ticket.ticket_attach}</td>
                                         <td>{localDate}</td>
+                                        <td>{localDateClosed}</td>
                                     </tr>
                                 );
                             })}

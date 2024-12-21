@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './UserDashboard.css';
-import logo from './roman_helpdesk.jpeg';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
@@ -17,6 +16,7 @@ const UserDashboard = () => {
     const [technicians, setTechnicians] = useState([]); // Store fetched technicians
     const [selectedTechnician, setSelectedTechnician] = useState(''); // Store selected technician
     const [tickets, setTickets] = useState([]); // Store fetched tickets
+    const [sortBy, setSortBy] = useState({ field: '', order: 'asc' });
 
     // Fetch user info and tickets
     useEffect(() => {
@@ -123,6 +123,38 @@ const UserDashboard = () => {
         }
     };
 
+    //Sort Ticket
+    const sortTickets = (field) => {
+        const newOrder = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
+        setSortBy({ field, order: newOrder });
+    
+        const sortedTickets = [...tickets].sort((a, b) => {
+            if (newOrder === 'asc') {
+                return a[field] > b[field] ? 1 : -1;
+            } else {
+                return a[field] < b[field] ? 1 : -1;
+            }
+        });
+        setTickets(sortedTickets);
+    };
+
+    //Mark Confirmation
+    const handleMarkAsDone = (ticket_ID) => {
+        if (window.confirm("Are you sure?")) {
+            axios.put(`http://localhost:5000/tickets/${ticket_ID}/close`)
+                .then(response => {
+                    alert("Ticket closed successfully!");
+                    setTickets(tickets.map(ticket =>
+                        ticket.ticket_ID === ticket_ID ? { ...ticket, ticket_status: 'Closed' } : ticket
+                    ));
+                })
+                .catch(error => {
+                    console.error('Error closing ticket:', error);
+                    alert('Failed to close the ticket.');
+                });
+        }
+    };
+
     //------------------------------------LOGOUT-------------------------------
     const handleLogout = () => {
         // Clear any authentication tokens or user data (if applicable)
@@ -132,9 +164,8 @@ const UserDashboard = () => {
 
 return (
     <div>
-
         {/* Main Content */}
-        <div className="user-dashboard">
+        <div className="App-header">
             <div className="logout-container">
                 <button className="logout-button" onClick={handleLogout}>Logout</button>
             </div>
@@ -204,9 +235,9 @@ return (
                         required
                     >
                         <option value="">Select urgency level</option>
-                        <option value="Rendah">Low</option>
-                        <option value="Sedang">Medium</option>
-                        <option value="Urgent">High</option>
+                        <option value="Rendah">Rendah</option>
+                        <option value="Sedang">Sedang</option>
+                        <option value="Urgent">Urgent</option>
                     </select>
                 </div>
                 <div className="form-group">
@@ -228,9 +259,11 @@ return (
                             <th>Subject</th>
                             <th>Description</th>
                             <th>Category</th>
-                            <th>Urgency</th>
-                            <th>Status</th>
-                            <th>Time Created</th>
+                            <th>Attachment</th>
+                            <th><button onClick={() => sortTickets('ticket_urgency')}>Urgency</button></th>
+                            <th><button onClick={() => sortTickets('ticket_status')}>Status</button></th>
+                            <th>Date Created</th>
+                            <th>Date Closed</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -239,9 +272,44 @@ return (
                                 <td>{ticket.ticket_subject}</td>
                                 <td>{ticket.ticket_desc}</td>
                                 <td>{ticket.ticket_category}</td>
+                                <td>{ticket.attachment}</td>
                                 <td>{ticket.ticket_urgency}</td>
-                                <td>{ticket.ticket_status}</td>
-                                <td>{new Date(ticket.date_created).toLocaleString()}</td>
+                                <td>
+                                    {ticket.ticket_status === 'Open' && <span>Open</span>}
+                                    {ticket.ticket_status === 'In Progress' && <span>In Progress</span>}
+                                    {ticket.ticket_status === 'Done' && (
+                                        <button onClick={() => handleMarkAsDone(ticket.ticket_ID)}>
+                                            Mark as Done
+                                        </button>
+                                    )}
+                                    {ticket.ticket_status === 'Closed' && <span>Closed</span>}
+                                </td>
+                                <td>{new Date(ticket.date_created).toLocaleString('en-GB', { 
+                                        day: '2-digit', 
+                                        month: '2-digit', 
+                                        year: 'numeric', 
+                                        hour: '2-digit', 
+                                        minute: '2-digit', 
+                                        hour12: false 
+                                    })}
+                                </td>
+                                <td>{ticket.ticket_status === "Closed" ? (
+                                    ticket.date_closed ? (
+                                        new Date(ticket.date_closed).toLocaleString('en-GB', { 
+                                        day: '2-digit', 
+                                        month: '2-digit', 
+                                        year: 'numeric', 
+                                        hour: '2-digit', 
+                                        minute: '2-digit', 
+                                        hour12: false 
+                                    })
+                                    ) : (
+                                        "Not available"
+                                    )
+                                    ) : (
+                                    "N/A"
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
